@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.sm2m.noticeBoard.manage.mapper.CateManageMapper">
+	<select id="selectParent" resultType="kr.sm2m.noticeBoard.manage.domain.CateManage">
+		SELECT bc_code as bcCode
+			, bc_title as bcTitle
+			, bc_root as bcRoot
+			, bd_sum as bdSum
+		FROM board_category
+		
+	</select>
+	
+	<select id="selectChild" resultType="kr.sm2m.noticeBoard.manage.domain.CateManage" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		SELECT bc_code as bcCode
+			, bc_title as bcTitle
+			, bc_root as bcRoot
+		FROM board_category
+		WHERE bc_root = #{bcCode};
+	</select>
+	
+	<insert id="insertCate" parameterType="kr.sm2m.noticeBoard.manage.domain.CateManage">
+		INSERT INTO board_category
+			(bc_title
+			, bc_root
+			, bd_sum
+			, bc_type
+			, bc_rating)
+		VALUES
+			(#{bcTitle}
+			, #{bcRoot}
+			, 0
+			, #{bcType}
+			, #{bcRating})
+	</insert>
+	
+	<update id="updateCate" parameterType="kr.sm2m.noticeBoard.manage.domain.CateManage">
+		UPDATE board_category
+		SET bc_title = #{bcTitle}
+			, bc_rating = #{bcRating}
+		WHERE bc_code = #{bcCode};
+	</update>
+	
+	<delete id="deleteCate" parameterType="java.util.List">
+		DELETE
+		FROM board_category
+		WHERE bc_code IN
+			<foreach collection="list" item="findChild" open="(" close=");" separator=",">
+				${findChild}
+			</foreach>
+	</delete>
+	
+	<select id= "findChild" parameterType="kr.sm2m.noticeBoard.manage.domain.CateManage" resultType = "int">
+		SELECT bc_code
+		FROM board_category
+		WHERE bc_root = #{bcCode};
+	</select>
+</mapper>

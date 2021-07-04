@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.sm2m.noticeBoard.board.mapper.BoardMapper">
+
+	<!-- 유튜브썸네일삭제 -->
+	<delete id="delYoutubeThumb" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		DELETE
+		FROM board_file
+		WHERE bf_code = #{bfCode} 
+	</delete>
+	
+	<!-- 유튜브썸네일등록 -->
+	<insert id="insertYoutubeThumb" parameterType="kr.sm2m.noticeBoard.board.domain.Board" useGeneratedKeys="true" keyProperty="bfCode">
+		INSERT INTO board_file
+			 (bd_code
+			 , bf_list_thumb
+			 , bf_picked
+			 , youtube)
+		VALUES
+			(#{bdCode}
+			, #{listThumb}
+			, 0
+			, 1)
+	</insert>
+	
+	<!-- 유튜브썸네일조회 -->
+	<select id="selectYoutubeThumb" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="kr.sm2m.noticeBoard.board.domain.Board">
+		SELECT bf_code as bfCode
+			, bf_list_thumb as listThumb
+			, bf_picked as picked
+		FROM board_file
+		WHERE bd_code = #{bdCode} AND youtube = 1; 
+	</select>
+	
+	<select id="countBoard" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="int">
+		SELECT COUNT(bd_code)
+		FROM board b
+		LEFT JOIN members_info m
+		ON b.mi_code = m.mi_code
+		WHERE bc_code = #{bcCode}
+		<choose>
+			<when test="selected==1">
+				AND bd_title LIKE '%${searchWrd}%'
+			</when>
+			<when test="selected==2">
+				AND bd_content LIKE '%${searchWrd}%'
+			</when>
+			<when test="selected==3">
+				AND mi_name LIKE '%${searchWrd}%'
+			</when>
+		</choose>
+	</select>
+
+	<!-- 대표이미지선택 -->
+	<update id="picked" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board_file
+		SET bf_picked = #{picked}
+		WHERE bf_code = #{picked}
+	</update>
+	
+	<!-- 갤러리글등록 -->
+	<update id="insertImgBoard" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board
+		SET bd_title = #{bdTitle}
+			, bd_content = #{bdContent}
+			, bd_enroll_date = now()
+			, dump = 1
+			, picked_src = #{pickedSrc}
+		WHERE bd_code = #{bdCode}
+	</update>
+	
+	<!-- 갤러리글수정 -->
+	<update id="updateImgBoard" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board
+		SET bd_title = #{bdTitle}
+			, bd_content = #{bdContent}
+			, bd_mod_date = now()
+			, picked_src = #{pickedSrc}
+		WHERE bd_code = #{bdCode}
+	</update>
+	
+	<!-- 대표이미지수정 -->
+	<update id="updatePicked" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board_file
+		SET bf_picked = 0
+		WHERE bd_code = #{bdCode}
+	</update>
+	
+	<!-- 글임시등록 -->
+	<insert id="dumpBoard" parameterType="kr.sm2m.noticeBoard.board.domain.Board" useGeneratedKeys="true" keyProperty="bdCode">
+		INSERT INTO board
+			(bd_views
+			, mi_code
+			, bc_code
+			, br_sum
+			, bd_ip
+			, dump)
+		VALUES
+			(0
+			, #{miCode}
+			, #{bcCode}
+			, 0
+			, #{bdIp}
+			, 0)	
+	</insert>
+	
+	<!-- 글등록 -->
+	<insert id="insertBoard" parameterType="kr.sm2m.noticeBoard.board.domain.Board" useGeneratedKeys="true" keyProperty="bdCode">
+		INSERT INTO board
+			(bd_title
+			, bd_content
+			, bd_enroll_date
+			, bd_views
+			, mi_code
+			, bc_code
+			, br_sum
+			, bd_ip
+			, dump)
+		VALUES
+			(#{bdTitle}
+			, #{bdContent}
+			, now()
+			, 0
+			, #{miCode}
+			, #{bcCode}
+			, 0
+			, #{bdIp}
+			, 1)
+	</insert>
+	
+	<!-- 파일업로드 -->
+	<insert id="fileUpload" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		INSERT INTO board_file
+			 (bf_ori_title
+			 , bf_sto_title
+			 , bf_size
+			 , bf_path
+			 , bd_code
+			 , bf_list_thumb
+			 , bf_view_thumb
+			 , bf_picked)
+		VALUES
+			<foreach collection="list" item="file" separator=",">
+				(#{file.bfOriTitle}
+				, #{file.bfStoTitle}
+				, #{file.bfSize}
+				, #{file.bfPath}
+				, #{file.bdCode}
+				, #{file.listThumb}
+				, #{file.viewThumb}
+				, 0)
+			</foreach>
+	</insert>
+	<!-- 파일조회 -->
+	<select id="selectFile" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="kr.sm2m.noticeBoard.board.domain.Board">
+		SELECT bf_code as bfCode
+			, bf_ori_title as bfOriTitle
+			, bf_size as bfSize
+			, bf_sto_title as bfStoTitle
+			, bf_path as bfPath
+			, bf_view_thumb as viewThumb
+			, bf_list_thumb as listThumb
+			, bf_picked as picked
+		FROM board_file
+		WHERE bd_code = #{bdCode} AND youtube is null;
+	</select>
+	
+	<!-- 글조회 -->
+	<select id="selectBoard" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="kr.sm2m.noticeBoard.board.domain.Board">
+		SELECT bd_code as bdCode
+			, bd_title as bdTitle
+			, bd_enroll_date as bdEnrollDate
+			, bd_views as bdViews
+			, mi_name as miName
+			, bc_code as bcCode
+			, br_sum as brSum
+			, picked_src as pickedSrc
+		FROM board b
+		LEFT JOIN members_info m
+		ON b.mi_code = m.mi_code
+		WHERE bc_code = #{bcCode}
+		AND dump = 1
+		<choose>
+			<when test="selected==1">
+				AND bd_title LIKE '%${searchWrd}%'
+			</when>
+			<when test="selected==2">
+				AND bd_content LIKE '%${searchWrd}%'
+			</when>
+			<when test="selected==3">
+				AND mi_name LIKE '%${searchWrd}%'
+			</when>
+		</choose>
+		ORDER BY bd_code DESC
+		LIMIT ${(currentPage-1)*perPage},${perPage};
+	</select>
+	
+	<!-- 조회수증가 -->
+	<update id="updateView" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board
+		SET bd_views = bd_views + 1
+		WHERE bd_code = #{bdCode}
+	</update>
+	
+	<!-- 글상세조회 -->
+	<select id="boardInfo" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="kr.sm2m.noticeBoard.board.domain.Board">
+		SELECT bd_title as bdTitle
+			, bd_content as bdContent
+			, b.mi_code as miCode
+			, bd_views as bdViews
+            , br_sum as brSum
+            , mi_name as miName
+            , bd_enroll_date as bdEnrollDate
+		FROM board b
+		LEFT JOIN members_info m
+		ON b.mi_code = m.mi_code
+		WHERE bd_code = #{bdCode};
+	</select>
+	
+	<!-- 글수정 -->
+	<update id="boardUpdate" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board
+		SET bd_title = #{bdTitle}
+			, bd_content = #{bdContent}
+			, bd_mod_date = now()
+		WHERE bd_code = #{bdCode}
+	</update>
+	
+	<!-- 글삭제 -->
+	<delete id="boardDelete" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		DELETE
+		FROM board
+		WHERE bd_code = #{bdCode};
+	</delete>
+	
+	<!-- 댓글등록 -->
+	<insert id="replyInsert" parameterType="kr.sm2m.noticeBoard.board.domain.Board" useGeneratedKeys="true" keyProperty="brCode">
+		INSERT INTO board_reply
+			(br_content
+			, br_enroll_date
+			, mi_code
+			, bd_code
+			, br_ip
+			, group_no
+			, group_ord
+			, group_layer
+			, br_del)
+		VALUES
+			(#{brContent}
+			, now()
+			, #{miCode}
+			, #{bdCode}
+			, #{brIp}
+			, #{groupNo}
+			, #{groupOrd}
+			, #{groupLayer}
+			, 0)	
+	</insert>
+	
+	<!-- 해당 그룹 중 가장 큰 group_ord 조회 -->
+	<select id="maxOrd" parameterType="int" resultType="int">
+		SELECT MAX(group_ord)
+		FROM board_reply
+		WHERE group_no = #{groupNo};
+	</select>
+	
+	<!-- 원글 그룹번호 업데이트 -->
+	<update id="updateGroupNo" parameterType="int">
+		UPDATE board_reply
+		SET group_no = #{brCode}
+		WHERE br_code = #{brCode};
+	</update>
+	
+	<!-- 댓글수증감 -->
+	<update id="updateBrSum" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board
+		<choose>
+			<when test="brType==1">
+				SET	br_sum = br_sum + 1
+			</when>
+			<when test="brType==2">
+				SET	br_sum = br_sum - 1
+			</when>
+		</choose>
+		WHERE bd_code=#{bdCode};
+	</update>
+	
+	<!-- 댓글합계 -->
+	<select id="replySum" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="int">
+		SELECT br_sum
+		FROM board
+		WHERE bd_code=#{bdCode};
+	</select>
+	
+	<!-- 댓글조회 -->
+	<select id="replySelect" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="kr.sm2m.noticeBoard.board.domain.Board">
+		SELECT br_code as brCode 
+			, br_content as brContent
+			, br_enroll_date as brEnrollDate
+			, mi_name as miName
+			, b.mi_code as miCode
+			, group_no as groupNo
+			, group_ord as groupOrd
+			, group_layer as groupLayer
+			, br_del as brDel
+		FROM board_reply b
+		LEFT JOIN members_info m
+		ON b.mi_code = m.mi_code 
+		WHERE bd_code = #{bdCode}
+		ORDER BY group_no ASC, group_ord ASC;
+	</select>
+	
+	<!-- 댓글삭제 -->
+	<delete id="replyDelete" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		DELETE FROM board_reply
+		WHERE br_code = #{brCode}
+	</delete>
+	
+	<!-- 그룹내 댓글갯수 -->
+	<select id="countChildBr" parameterType="int" resultType="int">
+		SELECT COUNT(br_code)
+		FROM board_reply
+		WHERE group_no = #{groupNo};
+	</select>
+	
+	<!-- 원글삭제여부 1로 수정 -->
+	<update id="updateBrDel" parameterType="int">
+		UPDATE board_reply
+		SET br_del = 1
+		WHERE br_code = #{brCode};
+	</update>
+	
+	<!-- 원글 삭제여부 조회 -->
+	<select id="selectBrDel" parameterType="int" resultType="int">
+		SELECT br_del
+		FROM board_reply
+		WHERE br_code = #{groupNo};
+	</select>
+	
+	<!-- 게시글수증감 -->
+	<update id="updateBdSum" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		UPDATE board_category
+		<choose>
+			<when test="bdType==1">
+				SET	bd_sum = bd_sum + 1
+			</when>
+			<when test="bdType==2">
+				SET	bd_sum = bd_sum - 1
+			</when>
+		</choose>
+		WHERE bc_code IN (#{parentCode}
+						, #{bcCode});
+	</update>
+	
+	<!-- 부모카테고리찾기 -->
+	<select id="findParent" parameterType="kr.sm2m.noticeBoard.board.domain.Board" resultType="int">
+		SELECT bc_code
+		FROM board_category
+		WHERE bc_code = (SELECT bc_root
+						FROM board_category
+						WHERE bc_code = #{bcCode});
+	</select>
+	
+	<!-- 리스트썸네일조회 -->
+<!-- 	<select id="selectListThumb" parameterType="java.util.List" resultType="kr.sm2m.noticeBoard.board.domain.Board"> -->
+<!-- 		SELECT bf_code as bfCode -->
+<!-- 			, bf_path as bfPath -->
+<!-- 			, bf_list_thumb as listThumb -->
+<!-- 		FROM board_file -->
+<!-- 		WHERE bd_code IN -->
+<!-- 			<foreach collection="list" item="imgBoardCode" open="(" close=")" separator=","> -->
+<!-- 				${imgBoardCode} -->
+<!-- 			</foreach>  -->
+<!-- 		AND bf_picked != 0 -->
+<!-- 		ORDER BY bd_code DESC; -->
+<!-- 	</select> -->
+	
+	<select id="selectDelFile" parameterType="java.util.List" resultType="kr.sm2m.noticeBoard.board.domain.Board">
+		SELECT bf_path as bfPath
+			, bf_sto_title as bfStoTitle
+		FROM board_file
+		WHERE bf_code IN
+			<foreach collection="list" item="delFileList" open="(" close=")" separator=",">
+				${delFileList}
+			</foreach>	
+	</select>
+	
+	<delete id="removeDelFile" parameterType="java.util.List">
+		DELETE
+		FROM board_file
+		WHERE bf_code IN
+			<foreach collection="list" item="delFileList" open="(" close=")" separator=",">
+				${delFileList}
+			</foreach>
+	</delete>
+	
+	<delete id="removeImg" parameterType="kr.sm2m.noticeBoard.board.domain.Board">
+		DELETE
+		FROM board_file
+		WHERE bf_code = #{bfCode}
+	</delete>
+</mapper>

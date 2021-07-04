@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN" "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+	<!-- 홈 화면 타일즈 -->
+	<definition name=".main" template="/WEB-INF/view/main/main.jsp">
+		<put-attribute name="header" value="/WEB-INF/view/main/header.jsp" />
+		<put-attribute name="sideBar" value="/WEB-INF/view/main/sideBar.jsp" />
+		<put-attribute name="topBar" value="/WEB-INF/view/main/topBar.jsp" />
+		<put-attribute name="body" value="/WEB-INF/view/main/home.jsp" />
+		<put-attribute name="footer" value="/WEB-INF/view/main/footer.jsp" />
+		<put-attribute name="topButton" value="/WEB-INF/view/main/topButton.jsp" />
+		<put-attribute name="logout" value="/WEB-INF/view/user/logout.jsp" />
+		<put-attribute name="bottomjs" value="/WEB-INF/view/main/bottomjs.jsp" />
+	</definition>
+
+	<!-- 로그인 화면 타일즈 -->
+	<definition name=".userMain" template="/WEB-INF/view/user/userMain.jsp">
+		<put-attribute name="header" value="/WEB-INF/view/main/header.jsp" />
+		<put-attribute name="body" value="" />
+		<put-attribute name="bottomjs" value="/WEB-INF/view/main/bottomjs.jsp" />
+	</definition>
+		
+	<!-- 로그인관련 페이지 -->
+	<definition name=".login" extends=".userMain">
+		<put-attribute name="body" value="/WEB-INF/view/user/login1.jsp" />
+	</definition>
+	<definition name=".register" extends=".userMain">
+		<put-attribute name="body" value="/WEB-INF/view/user/register.jsp" />
+	</definition>
+<!-- 	<definition name=".forgotPwd" extends=".userMain"> -->
+<!-- 		<put-attribute name="body" value="/WEB-INF/view/user/forgotPwd.jsp" /> -->
+<!-- 	</definition> -->
+	
+	<!-- 에러페이지 -->
+	<definition name=".page404" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/main/404.jsp" />
+	</definition>
+	
+	<!-- 게시판관련 페이지 -->
+	<!-- text게시판 -->
+	<definition name=".board" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/textBoard/boardList.jsp" />
+	</definition>
+	<definition name=".boardView" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/textBoard/boardView.jsp" />
+	</definition>
+	<definition name=".boardInsert" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/textBoard/boardInsert.jsp" />
+	</definition>
+	<definition name=".boardUpdate" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/textBoard/boardUpdate.jsp" />
+	</definition>
+	
+	<!-- img게시판 -->
+	<definition name=".imgBoard" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/imgBoard/imgBoardList.jsp" />
+	</definition>
+	<definition name=".imgBoardView" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/imgBoard/imgBoardView.jsp" />
+	</definition>
+	<definition name=".imgBoardInsert" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/imgBoard/imgBoardInsert.jsp" />
+	</definition>
+	<definition name=".imgBoardUpdate" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/imgBoard/imgBoardUpdate.jsp" />
+	</definition>
+	
+	<!-- media게시판	 -->
+	<definition name=".mediaBoard" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/mediaBoard/mediaBoardList.jsp" />
+	</definition>
+	<definition name=".mediaBoardView" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/mediaBoard/mediaBoardView.jsp" />
+	</definition>
+	<definition name=".mediaBoardInsert" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/mediaBoard/mediaBoardInsert.jsp" />
+	</definition>
+	<definition name=".mediaBoardUpdate" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/board/mediaBoard/mediaBoardUpdate.jsp" />
+	</definition>
+	
+	<!-- 관리관련페이지 -->
+	<definition name=".cateManage" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/manage/cateManage.jsp" />
+	</definition>
+	<definition name=".userManage" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/manage/userManage.jsp" />
+	</definition>
+	
+	<definition name="*/*" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/{1}/{2}.jsp" />
+	</definition>
+
+	<definition name="*/*/*" extends=".main">
+		<put-attribute name="body" value="/WEB-INF/view/{1}/{2}/{3}.jsp" />
+	</definition>
+
+</tiles-definitions>

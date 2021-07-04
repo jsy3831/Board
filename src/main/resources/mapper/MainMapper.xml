@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.sm2m.noticeBoard.main.mapper.MainMapper">
+	
+	<!-- 아이디중복검사 -->
+	<select id="idCheck" parameterType="kr.sm2m.noticeBoard.main.domain.Main" resultType="int">
+		SELECT COUNT(mi_id)
+		FROM members_info
+		WHERE mi_id = #{miId};
+	</select>
+	
+	<!-- 회원가입 -->
+	<insert id="insertRegister" parameterType="kr.sm2m.noticeBoard.main.domain.Main">
+		INSERT INTO members_info
+			(mi_id
+			, mi_pwd
+			, mi_name
+			, mi_email
+			, mi_ctg
+			, mr_ctg
+			, mi_ip)
+		VALUES
+			(#{miId}
+			, HEX(AES_ENCRYPT(#{miPwd}, 'pwd'))
+			, #{miName}
+			, #{miEmail}
+			, #{miCtg}
+			, #{mrCtg}
+			, #{miIp})
+	</insert>
+	
+	<!-- 회원정보수정 -->
+	<update id="editMemInfo" parameterType="kr.sm2m.noticeBoard.main.domain.Main">
+		UPDATE members_info
+		SET mi_email = #{miEmail}
+		<choose>
+			<when test="miPwd != ''">
+				, mi_pwd = HEX(AES_ENCRYPT(#{miPwd}, 'pwd'))
+			</when>
+		</choose>
+		
+		WHERE mi_code = #{miCode}
+	</update>
+	
+	<!-- 회원탈퇴 -->
+	<update id="deleteRegister" parameterType="kr.sm2m.noticeBoard.main.domain.Main">
+		UPDATE members_info
+		SET mi_ctg = 40
+		WHERE mi_code = #{miCode}
+	</update>
+	
+	<!-- 로그인 -->
+	<select id="selectLogin" parameterType="kr.sm2m.noticeBoard.main.domain.Main" resultType="kr.sm2m.noticeBoard.main.domain.Main">
+		SELECT mi_code as miCode, mi_name as miName, mr_ctg as mrCtg, mi_id as miId, mi_email as miEmail
+		FROM members_info
+		WHERE mi_id = #{miId} AND AES_DECRYPT(UNHEX(mi_pwd), 'pwd') = #{miPwd}
+		AND mi_ctg = 20;
+	</select>
+	
+	<!-- 카테고리조회 -->
+	<select id="selectCate" resultType="kr.sm2m.noticeBoard.main.domain.Main">
+		SELECT bc_code as bcCode
+			, bc_title as bcTitle
+			, bc_root as bcRoot
+			, bd_sum as bdSum
+			, bc_type as bcType
+			, bc_rating as bcRating
+		FROM board_category
+	</select>
+	
+	<!-- bar차트데이터 -->
+	<select id="selectBarData" resultType="kr.sm2m.noticeBoard.main.domain.Main">
+		SELECT bc_title as bcTitle
+			, bd_sum as bdSum
+		FROM board_category
+		WHERE bc_root != '#' AND bd_sum != 0
+		ORDER BY bd_sum DESC
+		LIMIT 0,6;
+	</select>
+	
+	<!-- line차트데이터 -->
+	<select id="selectLineData" resultType="int">
+		SELECT DATE_FORMAT(bd_enroll_date, '%d')
+		FROM board
+		WHERE DATE(bd_enroll_date) >= DATE_SUB(NOW(), INTERVAL 7 DAY);
+		
+<!-- 		SELECT DATE_FORMAT(bd_enroll_date, '%d'), COUNT(*) -->
+<!-- 		FROM board   -->
+<!-- 		WHERE DATE(bd_enroll_date) >= DATE_SUB(NOW(), INTERVAL 7 DAY) -->
+<!-- 		GROUP BY Date(bd_enroll_date); -->
+	</select>
+	
+	<!-- pie차트데이터 -->
+	<select id="selectPieData" resultType="kr.sm2m.noticeBoard.main.domain.Main">
+		SELECT COUNT(bd_code) as bdSum
+			, mi_name as miName
+		FROM board b
+		LEFT JOIN members_info m
+		ON b.mi_code = m.mi_code
+		WHERE mi_ctg = 20
+		GROUP BY mi_name
+		LIMIT 0,5; 
+	</select>
+	
+	<!-- 조회수많은글 -->
+	<select id="selectViewTop" resultType="kr.sm2m.noticeBoard.main.domain.Main">
+		SELECT bd_code as bdCode
+			, bd_title as bdTitle
+			, br_sum as brSum
+			, mi_name as miName
+			, b.bc_code as bcCode
+			, bc_title as bcTitle
+            , bc_rating as bcRating
+            , bc_type as bcType
+            , bc_root as pbcCode
+		FROM board b
+		LEFT JOIN members_info m
+		ON b.mi_code = m.mi_code
+		LEFT JOIN board_category c
+        ON b.bc_code = c.bc_code
+		WHERE bd_views != 0
+		AND dump = 1
+		ORDER BY bd_views DESC
+		LIMIT 0,5; 
+	</select>
+	
+	<!-- 댓글많은글 -->
+	<select id="selectReplyTop" resultType="kr.sm2m.noticeBoard.main.domain.Main">
+		SELECT bd_code as bdCode
+			, bd_title as bdTitle
+			, br_sum as brSum
+			, mi_name as miName
+			, b.bc_code as bcCode
+			, bc_title as bcTitle
+            , bc_rating as bcRating
+            , bc_type as bcType
+            , bc_root as pbcCode 
+		FROM board b
+		LEFT JOIN members_info m
+		ON b.mi_code = m.mi_code
+		LEFT JOIN board_category c
+        ON b.bc_code = c.bc_code
+		WHERE br_sum != 0
+		AND dump = 1
+		ORDER BY br_sum DESC
+		LIMIT 0,5; 
+	</select>
+	
+</mapper>

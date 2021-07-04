@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.sm2m.noticeBoard.manage.mapper.UserManageMapper">
+	<select id ="countUser" parameterType="kr.sm2m.noticeBoard.manage.domain.UserManage" resultType="int">
+		SELECT COUNT(mi_code)
+		FROM members_info
+		WHERE
+		<choose>
+			<when test="selected==1">
+				mi_id LIKE '%${searchWrd}%'
+			</when>
+			<when test="selected==2">
+				mi_name LIKE '%${searchWrd}%'
+			</when>
+		</choose>
+	</select>
+	
+	<select id="selectUser" parameterType="kr.sm2m.noticeBoard.manage.domain.UserManage" resultType="kr.sm2m.noticeBoard.manage.domain.UserManage">
+		SELECT mi_code as miCode
+			, mi_id as miId
+			, mi_name as miName
+			, mi_email as miEmail
+			, mi_ctg as miCtg
+			, mr_ctg as mrCtg
+			, mi_ip as miIp
+		FROM members_info
+		WHERE
+		<choose>
+			<when test="selected==1">
+				mi_id LIKE '%${searchWrd}%'
+			</when>
+			<when test="selected==2">
+				mi_name LIKE '%${searchWrd}%'
+			</when>
+		</choose>
+		ORDER BY mi_code DESC
+		LIMIT ${(currentPage-1)*perPage},${perPage};
+	</select>
+	
+	<select id="selectRating" resultType="kr.sm2m.noticeBoard.manage.domain.UserManage">
+		SELECT mr_code as mrCode
+			, mr_title as mrTitle
+			, mr_ctg as mrCtg
+		FROM members_rating
+	</select>
+	
+	<update id="updateRating" parameterType="kr.sm2m.noticeBoard.manage.domain.UserManage">
+		UPDATE members_info
+		SET mr_ctg = #{mrCtg}
+		WHERE mi_code = #{miCode}
+	</update>	
+</mapper>
